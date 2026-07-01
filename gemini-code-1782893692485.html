@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chill Paca Collection & Mini-Game</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px 0 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f7f3e8;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ==================== SHOOTING STARS BACKGROUND EFFECTS ==================== */
+        .star-container-left, .star-container-right {
+            position: fixed;
+            top: 0;
+            width: 15vw;
+            height: 100vh;
+            pointer-events: none; /* Supaya tidak mengganggu klik mouse */
+            z-index: 0;
+        }
+
+        .star-container-left { left: 20px; }
+        .star-container-right { right: 20px; }
+
+        .shooting-star {
+            position: absolute;
+            top: -50px;
+            width: 2px;
+            height: 50px;
+            background: linear-gradient(to bottom, rgba(201, 160, 84, 0.7), transparent);
+            animation: fall linear infinite;
+            opacity: 0;
+        }
+
+        /* Variasi Posisi & Waktu Bintang Jatuh Kiri */
+        .star-container-left .shooting-star:nth-child(1) { left: 10%; animation-duration: 4s; animation-delay: 0s; }
+        .star-container-left .shooting-star:nth-child(2) { left: 40%; animation-duration: 6s; animation-delay: 2s; }
+        .star-container-left .shooting-star:nth-child(3) { left: 80%; animation-duration: 5s; animation-delay: 3.5s; }
+
+        /* Variasi Posisi & Waktu Bintang Jatuh Kanan */
+        .star-container-right .shooting-star:nth-child(1) { left: 20%; animation-duration: 5.5s; animation-delay: 1s; }
+        .star-container-right .shooting-star:nth-child(2) { left: 60%; animation-duration: 4.5s; animation-delay: 2.5s; }
+        .star-container-right .shooting-star:nth-child(3) { left: 90%; animation-duration: 6.5s; animation-delay: 0.5s; }
+
+        @keyframes fall {
+            0% { transform: translateY(0) scaleY(1); opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(110vh) scaleY(1.5); opacity: 0; }
+        }
+
+        /* Memastikan konten utama berada di atas bintang jatuh */
+        .header-banner, .container, .game-section, .collection-section, .footer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Banner Styling */
+        .header-banner {
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .header-banner img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Main Content Container */
+        .container {
+            display: flex;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 90%;
+            gap: 40px;
+            box-sizing: border-box;
+            margin-bottom: 40px;
+        }
+
+        .description-box {
+            flex: 1;
+            padding: 30px;
+            background-color: #fcf8ec;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.02);
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #4a4a4a;
+        }
+
+        .image-box {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ==================== MINI-GAME SECTION ==================== */
+        .game-section {
+            background-color: #fff;
+            max-width: 900px;
+            width: 90%;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin-bottom: 40px;
+            box-sizing: border-box;
+        }
+
+        .game-title {
+            font-size: 2em;
+            color: #c9a054;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        .game-canvas {
+            width: 100%;
+            height: 350px;
+            background-color: #fcf8ec;
+            border: 3px dashed #c9a054;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="28" stroke="black" stroke-width="2"/><line x1="4" y1="16" x2="28" y2="16" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
+        }
+
+        .game-start-btn {
+            background-color: #c9a054;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+        }
+
+        .game-start-btn:hover {
+            background-color: #b08a43;
+            transform: scale(1.05);
+        }
+
+        /* Targets configuration */
+        .game-target, .game-bomb {
+            width: 70px;
+            height: 70px;
+            position: absolute;
+            display: none;
+            user-select: none;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><line x1="16" y1="4" x2="16" y2="28" stroke="black" stroke-width="2"/><line x1="4" y1="16" x2="28" y2="16" stroke="black" stroke-width="2"/></svg>') 16 16, crosshair;
+        }
+
+        .game-target:active {
+            transform: scale(0.8);
+        }
+
+        /* Danger bomb surprise design and sudden animation effect */
+        .game-bomb {
+            font-size: 55px;
+            line-height: 70px;
+            text-align: center;
+            animation: suddenSpawn 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes suddenSpawn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* ==================== REWARD POPUP MODAL ==================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .reward-modal {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 85%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .reward-modal {
+            transform: scale(1);
+        }
+
+        .reward-card {
+            background: linear-gradient(135deg, #c9a054, #e6c280);
+            border-radius: 15px;
+            padding: 30px 20px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(201, 160, 84, 0.4);
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reward-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+            animation: rotateBg 10s linear infinite;
+        }
+
+        .reward-text-main {
+            font-size: 2.2em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            text-transform: uppercase;
+        }
+
+        .reward-text-sub {
+            font-size: 1.4em;
+            font-weight: 700;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 6px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .close-modal-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .close-modal-btn:hover {
+            background-color: #439a46;
+            transform: scale(1.03);
+        }
+
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ==================== COLLECTION SECTION ==================== */
+        .collection-section {
+            width: 90%;
+            max-width: 900px;
+            text-align: center;
+            box-sizing: border-box;
+            margin-bottom: 60px;
+        }
+
+        .collection-title {
+            font-size: 2.5em;
+            color: #c9a054;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .collection-item {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s ease;
+        }
+
+        .collection-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .collection-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            display: block;
+        }
+
+        /* ==================== FOOTER SECTION ==================== */
+        .footer {
+            width: 100%;
+            background-color: #e6dfd1;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 0.95em;
+            color: #706a5e;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-top: auto;
+        }
+
+        /* Floating Audio Control Button */
+        .audio-player-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #c9a054;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-player-container:hover {
+            transform: scale(1.05);
+            background-color: #b08a43;
+        }
+
+        .music-icon {
+            font-size: 1.3em;
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.15); }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1100px) {
+            /* Sembunyikan bintang jika layar terlalu kecil agar tidak tumpang tindih */
+            .star-container-left, .star-container-right { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 20px;
+            }
+            .header-banner {
+                width: 90%;
+            }
+            .collection-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .collection-grid {
+                grid-template-columns: repeat(1, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sisi Latar Belakang Kiri: Bintang Jatuh -->
+    <div class="star-container-left">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <!-- Sisi Latar Belakang Kanan: Bintang Jatuh -->
+    <div class="star-container-right">
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+        <div class="shooting-star"></div>
+    </div>
+
+    <!-- Top Header Banner Image -->
+    <div class="header-banner">
+        <img src="Gemini_Generated_Image_v9ajsjv9ajsjv9aj-ezremove.jpg" alt="Chill Paca Banner">
+    </div>
+
+    <!-- Main Highlight Content -->
+    <div class="container">
+        <div class="description-box">
+            Meet the slickest Llama on the blockchain[cite: 1]. Dressed in a cozy yellow hoodie and sporting a smirk that says "I know something you don't," this pink Llama is here to bring full-on chill vibes and subtle confidence to your collection[cite: 1]. With sharp blue eyes and an undeniable charm, it’s not just a character—it's an attitude[cite: 1]. Grab yours before the herd moves on! 🦙✨[cite: 1]
+        </div>
+        <div class="image-box">
+            <img src="mediaThumbnail (11).jpg" alt="A cool pink llama in a yellow hoodie">
+        </div>
+    </div>
+
+    <!-- Mini-Game Section -->
+    <div class="game-section">
+        <div class="game-title">🦙 Catch The Chill Paca 🦙</div>
+        <p style="color: #666; margin-top: 0;">Score <b>100 points</b> to win. Hati-hati dengan <b>💣 BOM</b> yang muncul tiba-tiba!</p>
+        <button class="game-start-btn" id="startBtn" onclick="startGame()">START GAME</button>
+        
+        <div class="game-info">
+            <div>SCORE: <span id="scoreLabel" style="color: #c9a054;">0</span></div>
+            <div>TIME LEFT: <span id="timeLabel" style="color: #e74c3c;">30</span>s</div>
+        </div>
+
+        <div class="game-canvas" id="gameCanvas">
+            <!-- Game Target Assets -->
+            <img src="mediaThumbnail (6).jpg" class="game-target" id="gameTarget" onclick="hitTarget()" alt="Target Llama">
+            <div class="game-bomb" id="gameBomb" onclick="hitBomb()">💣</div>
+        </div>
+    </div>
+
+    <!-- Visual Reward Popup Modal -->
+    <div class="modal-overlay" id="rewardModalOverlay">
+        <div class="reward-modal">
+            <div style="font-size: 3.5em; margin-bottom: 5px;">🏆</div>
+            
+            <div class="reward-card">
+                <div class="reward-text-main">CONGRATULATIONS!</div>
+                <div class="reward-text-sub">GOOD JOB! 🌟</div>
+            </div>
+            
+            <p style="color: #555; font-size: 1.05em; margin-bottom: 25px;">
+                You scored <span id="finalScoreLabel" style="font-weight:bold; color:#c9a054;">0</span> points and successfully cleared the challenge!
+            </p>
+            <button class="close-modal-btn" onclick="closeModal()">AWESOME!</button>
+        </div>
+    </div>
+
+    <!-- Collection Grid Gallery Section -->
+    <div class="collection-section">
+        <div class="collection-title">Collection</div>
+        <div class="collection-grid">
+            <div class="collection-item"><img src="mediaThumbnail (140).jpg" alt="Llama with green scarf"></div>
+            <div class="collection-item"><img src="mediaThumbnail (22).jpg" alt="Zombie Llama with star glasses"></div>
+            <div class="collection-item"><img src="mediaThumbnail (142).jpg" alt="Pink Llama with bow tie"></div>
+            <div class="collection-item"><img src="mediaThumbnail (12).jpg" alt="White Llama in a suit"></div>
+            <div class="collection-item"><img src="mediaThumbnail (4).jpg" alt="Dark Llama with pixel glasses"></div>
+            <div class="collection-item"><img src="mediaThumbnail (1).jpg" alt="White Llama with green hoodie and star glasses"></div>
+            <div class="collection-item"><img src="mediaThumbnail (6).jpg" alt="White Llama with yellow hoodie"></div>
+            <div class="collection-item"><img src="mediaThumbnail (20).jpg" alt="Pink Llama blowing bubble gum"></div>
+            <div class="collection-item"><img src="mediaThumbnail (24).jpg" alt="Pink Llama smoking a cigar"></div>
+        </div>
+    </div>
+
+    <!-- Footer Copyright Section -->
+    <div class="footer">
+        2026 Chill Paca
+    </div>
+
+    <!-- Floating Custom Audio Player Container -->
+    <div class="audio-player-container" id="customPlayer" onclick="toggleAudio()">
+        <span class="music-icon" id="musicIcon">🎵</span>
+        <span class="player-text" id="playerText">PLAY CHILL MUSIC</span>
+    </div>
+
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Audio Controls
+        const music = document.getElementById('bgMusic');
+        const customPlayer = document.getElementById('customPlayer');
+        const musicIcon = document.getElementById('musicIcon');
+        const playerText = document.getElementById('playerText');
+        music.volume = 0.4;
+
+        function toggleAudio() {
+            if (music.paused) {
+                music.play().then(() => {
+                    musicIcon.textContent = "⏸️";
+                    playerText.textContent = "PAUSE MUSIC";
+                    customPlayer.style.backgroundColor = "#4caf50";
+                }).catch(err => console.log(err));
+            } else {
+                music.pause();
+                musicIcon.textContent = "🎵";
+                playerText.textContent = "PLAY CHILL MUSIC";
+                customPlayer.style.backgroundColor = "#c9a054";
+            }
+        }
+
+        // Game Engine States
+        let score = 0;
+        let timeLeft = 30;
+        let gameInterval;
+        let moveInterval;
+        let isPlaying = false;
+
+        const canvas = document.getElementById('gameCanvas');
+        const target = document.getElementById('gameTarget');
+        const bomb = document.getElementById('gameBomb');
+        const startBtn = document.getElementById('startBtn');
+        const scoreLabel = document.getElementById('scoreLabel');
+        const timeLabel = document.getElementById('timeLabel');
+        const overlay = document.getElementById('rewardModalOverlay');
+        const finalScoreLabel = document.getElementById('finalScoreLabel');
+
+        function startGame() {
+            if (isPlaying) return;
+            
+            score = 0;
+            timeLeft = 30;
+            isPlaying = true;
+            scoreLabel.textContent = score;
+            timeLabel.textContent = timeLeft;
+            startBtn.disabled = true;
+            startBtn.textContent = "GAME RUNNING...";
+            target.style.display = 'block';
+            bomb.style.display = 'none';
+
+            moveElements();
+            moveInterval = setInterval(moveElements, 850);
+
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timeLabel.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function moveElements() {
+            if (!isPlaying) return;
+            
+            const maxX = canvas.clientWidth - target.clientWidth;
+            const maxY = canvas.clientHeight - target.clientHeight;
+            target.style.left = Math.floor(Math.random() * maxX) + 'px';
+            target.style.top = Math.floor(Math.random() * maxY) + 'px';
+
+            if (Math.random() < 0.35) {
+                const maxBombX = canvas.clientWidth - bomb.clientWidth;
+                const maxBombY = canvas.clientHeight - bomb.clientHeight;
+                
+                bomb.style.left = Math.floor(Math.random() * maxBombX) + 'px';
+                bomb.style.top = Math.floor(Math.random() * maxBombY) + 'px';
+                
+                bomb.style.display = 'none';
+                void bomb.offsetWidth; 
+                bomb.style.display = 'block';
+            } else {
+                bomb.style.display = 'none';
+            }
+        }
+
+        function hitTarget() {
+            if (!isPlaying) return;
+            score += 10;
+            scoreLabel.textContent = score;
+            moveElements();
+        }
+
+        function hitBomb() {
+            if (!isPlaying) return;
+            endGame(true);
+        }
+
+        function endGame(hitBombObj = false) {
+            clearInterval(gameInterval);
+            clearInterval(moveInterval);
+            isPlaying = false;
+            target.style.display = 'none';
+            bomb.style.display = 'none';
+            startBtn.disabled = false;
+            startBtn.textContent = "PLAY AGAIN";
+            
+            if (hitBombObj) {
+                alert(`💥 BOOM! Kamu terkena bom yang muncul tiba-tiba! Game Over. Coba lagi!`);
+                return;
+            }
+
+            if (score >= 100) {
+                finalScoreLabel.textContent = score;
+                openModal();
+            } else {
+                alert(`🎮 Waktu habis! Skor akhir kamu: ${score} poin. Kamu butuh 100 poin untuk menang. Coba lagi!`);
+            }
+        }
+
+        function openModal() {
+            overlay.classList.add('active');
+        }
+
+        function closeModal() {
+            overlay.classList.remove('active');
+        }
+    </script>
+
+</body>
+</html>
